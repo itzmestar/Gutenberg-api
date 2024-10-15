@@ -23,7 +23,7 @@ class BookResponse:
     download_links: List[dict]
 
 
-@router.get("/books/", response_model=List[BookResponse])
+@router.get("/books/")
 def get_books(
     db: Session = Depends(get_db),
     offset: int = 0
