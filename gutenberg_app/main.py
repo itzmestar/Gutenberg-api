@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from gutenberg_app.routers.router_gutenberg import router as gutenberg_router
 
 # setup loggers
-logging.config.fileConfig('config/logging.conf', disable_existing_loggers=False)
+logging.config.fileConfig('gutenberg_app/config/logging.conf', disable_existing_loggers=False)
 
 # get root logger
 logger = logging.getLogger('gutenberg_app')
