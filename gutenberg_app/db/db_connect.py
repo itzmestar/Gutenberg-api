@@ -5,6 +5,7 @@ from gutenberg_app.config.constants import (
     DB_HOST, DB_USER, DB_PASS, DB_NAME
 )
 
+# database url
 DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL)
@@ -13,6 +14,9 @@ Base = declarative_base()
 
 
 def get_db():
+    """
+    Create a db connection session & close the connection after execution
+    """
     db = SessionLocal()
     try:
         yield db
