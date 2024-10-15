@@ -53,7 +53,9 @@ class BookLanguage(Base):
     book_id = Column(Integer, ForeignKey('books_book.id'), nullable=False)
     language_id = Column(Integer, ForeignKey('books_language.id'), nullable=False)
 
-    book = relationship('Book', back_populates='languages')
+    # Relationship to Book and Language
+    book = relationship("Book", back_populates="languages")
+    language = relationship('Language', back_populates='book_languages')
 
 
 class BookSubject(Base):
@@ -85,6 +87,8 @@ class Language(Base):
     __tablename__ = 'books_language'
     id = Column(Integer, primary_key=True)
     code = Column(String(4), nullable=False)
+
+    book_languages = relationship('BookLanguage', back_populates='language')
 
 
 class Subject(Base):
