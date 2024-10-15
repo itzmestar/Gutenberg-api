@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from gutenberg_app.db.db_connect import get_db
-from gutenberg_app.db.models import Book
+from gutenberg_app.db.models import Book, BookLanguage, Language
 from gutenberg_app.config.constants import QUERY_RESPONSE_SIZE
 
 
@@ -31,7 +31,7 @@ def get_books(
     """
     List the books based on the given filter criteria
     """
-    query = db.query(Book).order_by(Book.download_count)
+    query = db.query(Book).join(BookLanguage).join(Language).order_by(Book.download_count)
 
     # count total no. of books found as result of the query
     total_books = query.count()
