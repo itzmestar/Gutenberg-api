@@ -47,7 +47,6 @@ def get_books(
     if languages:
         query = query.join(BookLanguage).join(Language).filter(Language.code.in_(languages))
 
-
     # Filter by MIME types (e.g., text/html, application/pdf)
     if mime_types:
         logging.info(mime_types)
@@ -55,9 +54,14 @@ def get_books(
 
     # Filter by topics (subjects or bookshelves)
     if topics:
-        topic_filters = [Bookshelf.name.ilike(f"%{topic}%") for topic in topics] + \
-                        [Subject.name.ilike(f"%{topic}%") for topic in topics]
-        query = query.outerjoin(BookBookshelf).outerjoin(BookSubject).filter(or_(*topic_filters))
+        # Join and filter by bookshelves
+        query = query.join(BookBookshelf).join(Bookshelf).filter(
+            or_(*[Bookshelf.name.ilike(f"%{topic}%") for topic in topics])
+        )
+        # Join and filter by subjects
+        query = query.join(BookSubject).join(Subject).filter(
+            or_(*[Subject.name.ilike(f"%{topic}%") for topic in topics])
+        )
 
     # Filter by authors (partial, case-insensitive match)
     if authors:
