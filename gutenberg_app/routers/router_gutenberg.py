@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from gutenberg_app.db.db_connect import get_db
@@ -24,12 +24,17 @@ def model_to_dict(model):
 @router.get("/books/")
 def get_books(
     db: Session = Depends(get_db),
+    gutenberg_ids: Optional[List[int]] = Query(None),
     offset: int = 0
 ):
     """
     List the books based on the given filter criteria
     """
     query = db.query(Book).join(BookLanguage).join(Language).order_by(desc(Book.download_count))
+
+    # filter results by gutenberg_ids
+    if gutenberg_ids:
+        query = query.filter(Book.gutenberg_id.in_(gutenberg_ids))
 
     # count total no. of books found as result of the query
     total_books = query.count()
