@@ -35,7 +35,7 @@ def get_books(
     total_books = query.count()
     books = query.offset(offset).limit(QUERY_RESPONSE_SIZE).all()
 
-    #logging.info(model_to_dict(books[0].languages[0].language))
+    logging.info(model_to_dict(books[0].bookshelves[0]))
 
     return {
         "total": total_books,
@@ -51,7 +51,7 @@ def get_books(
                 #"genres": [bookshelf.bookshelf.name for bookshelf in book.bookshelves],
                 "language": [language.language.code for language in book.languages],
                 "subjects": [subject.subject.name for subject in book.subjects],
-                #"bookshelves": [bookshelf.name for bookshelf in book.bookshelves],
+                "bookshelves": [bookshelf.bookshelf.name for bookshelf in book.bookshelves],
                 "download_links": [{"mime_type": format.mime_type, "url": format.url} for format in book.formats]
             }
             for book in books
