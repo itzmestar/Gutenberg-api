@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from gutenberg_app.db.db_connect import get_db
-from gutenberg_app.db.models import Book, BookLanguage, Language
+from gutenberg_app.db.models import (Book, BookLanguage, Language, Author, BookAuthor)
 from gutenberg_app.config.constants import QUERY_RESPONSE_SIZE
 from sqlalchemy import desc, or_
 from sqlalchemy.inspection import inspect
@@ -27,6 +27,7 @@ def get_books(
     gutenberg_ids: Optional[List[int]] = Query(None),
     languages: Optional[List[str]] = Query(None),
     mime_types: Optional[List[str]] = Query(None),
+    authors: Optional[List[str]] = Query(None),
     titles: Optional[List[str]] = Query(None),
     offset: int = 0
 ):
@@ -48,6 +49,11 @@ def get_books(
     if mime_types:
         logging.info(mime_types)
         query = query.filter(Book.formats.mime_type.in_(mime_types))
+
+    # Filter by authors (partial, case-insensitive match)
+    if authors:
+        author_filters = [Author.name.ilike(f"%{author}%") for author in authors]
+        query = query.join(BookAuthor).join(Author).filter(or_(*author_filters))
 
     # If titles are provided, apply case-insensitive partial match for each
     if titles:
