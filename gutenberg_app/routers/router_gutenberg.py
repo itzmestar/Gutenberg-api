@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from gutenberg_app.db.db_connect import get_db
-from gutenberg_app.db.models import (Book, BookLanguage, Language, Author, BookAuthor)
+from gutenberg_app.db.models import (
+    Book, BookLanguage, Language, Author, BookAuthor, Bookshelf, Subject, BookFormat, BookBookshelf, BookSubject
+)
 from gutenberg_app.config.constants import QUERY_RESPONSE_SIZE
 from sqlalchemy import desc, or_
 from sqlalchemy.inspection import inspect
@@ -27,6 +29,7 @@ def get_books(
     gutenberg_ids: Optional[List[int]] = Query(None),
     languages: Optional[List[str]] = Query(None),
     mime_types: Optional[List[str]] = Query(None),
+    topics: Optional[List[str]] = Query(None),
     authors: Optional[List[str]] = Query(None),
     titles: Optional[List[str]] = Query(None),
     offset: int = 0
@@ -42,13 +45,19 @@ def get_books(
 
     # filter results by languages
     if languages:
-        #query = query.join(BookLanguage).filter(BookLanguage.language.language.code.in_(languages))
-        pass
+        query = query.join(BookLanguage).join(Language).filter(Language.code.in_(languages))
 
-    # filter results by mime_types
+
+    # Filter by MIME types (e.g., text/html, application/pdf)
     if mime_types:
         logging.info(mime_types)
-        query = query.filter(Book.formats.mime_type.in_(mime_types))
+        query = query.join(BookFormat).filter(BookFormat.mime_type.in_(mime_types))
+
+    # Filter by topics (subjects or bookshelves)
+    if topics:
+        topic_filters = [Bookshelf.name.ilike(f"%{topic}%") for topic in topics] + \
+                        [Subject.name.ilike(f"%{topic}%") for topic in topics]
+        query = query.outerjoin(BookBookshelf).outerjoin(BookSubject).filter(or_(*topic_filters))
 
     # Filter by authors (partial, case-insensitive match)
     if authors:
@@ -77,7 +86,7 @@ def get_books(
                     "birth": author.author.birth_year,
                     "death": author.author.death_year
                 } for author in book.authors],
-                #"genres": [bookshelf.bookshelf.name for bookshelf in book.bookshelves],
+                "genres": [subject.subject.name for subject in book.subjects],
                 "language": [language.language.code for language in book.languages],
                 "subjects": [subject.subject.name for subject in book.subjects],
                 "bookshelves": [bookshelf.bookshelf.name for bookshelf in book.bookshelves],
