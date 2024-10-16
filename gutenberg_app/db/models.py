@@ -45,7 +45,7 @@ class BookBookshelf(Base):
     bookshelf_id = Column(Integer, ForeignKey('books_bookshelf.id'), nullable=False)
 
     book = relationship('Book', back_populates='bookshelves')
-    #bookshelf = relationship('Bookshelf', back_populates='books')
+    bookshelf = relationship('Bookshelf', back_populates='book_bookshelves')
 
 
 class BookLanguage(Base):
@@ -73,6 +73,8 @@ class Bookshelf(Base):
     __tablename__ = 'books_bookshelf'
     id = Column(Integer, primary_key=True)
     name = Column(String(64), nullable=False)
+
+    book_bookshelves = relationship('BookBookshelf', back_populates='bookshelf')
 
 
 class BookFormat(Base):
